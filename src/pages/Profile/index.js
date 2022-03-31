@@ -8,6 +8,7 @@ import firebase from '../../services/firebaseConnection';
 import { AuthContext } from '../../contexts/auth';
 
 import { FiSettings, FiUpload } from 'react-icons/fi';
+import { toast } from "react-toastify"
 
 export default function Profile() {
     const { user, signOut, setUser, storageUser } = useContext(AuthContext);
@@ -16,12 +17,65 @@ export default function Profile() {
     const [email, setEmail] = useState(user && user.email);
 
     const [avatarURL, setAvatarURL] = useState(user && user.avatarURL);
-    const [imgAvatar, setImgAvatar] = useState(null);
+    const [imageAvatar, setImageAvatar] = useState(null);
+
+
+    function handleFile(e){
+
+        if(e.target.files[0]){
+            const image = e.target.files[0];
+
+            if(image.type === 'image/jpeg' || image.type === 'image/png'){
+                setImageAvatar(image);
+                setAvatarURL(URL.createObjectURL(e.target.files[0]))
+            }else{
+                alert('Envie uma imagem do tipo PNG ou JPEG')
+                setImageAvatar(null);
+                return null;
+            }
+        }
+    }
+
+
+  async function handleUpload(){
+        const currentUid = user.uid;
+
+        const updloadTask = await firebase.storage()
+        .ref(`images/${currentUid}/${imageAvatar.name}`)
+        .put(imageAvatar)
+        .then(async ()=>{
+            console.log('Foto enviada com sucesso.');
+
+            await firebase.storage().ref(`images/${currentUid}`)
+            .child(imageAvatar.name).getDownloadURL()
+            .then(async (url)=>{
+                let urlFoto = url;
+
+                await firebase.firestore().collection('users')
+                .doc(user.uid)
+                .update({
+                    avatarURL: urlFoto,
+                    name: name
+                })
+                .then(()=>{
+                    let data = {
+                        ...user,
+                        avatarURL: urlFoto,
+                        name: name
+                    };
+                    setUser(data);
+                    storageUser(data);
+                })
+            })
+
+        })
+    }
+
 
   async function handleSave(e){
-        e.preventDefault();
+        e.preventDefault();     //faz não atualizar a pagina
      
-        if(imgAvatar === null && name !== ''){
+        if(imageAvatar === null && name !== ''){
             await firebase.firestore().collection('users')
             .doc(user.uid)
             .update({
@@ -34,7 +88,11 @@ export default function Profile() {
                 };
                 setUser(data);
                 storageUser(data);
+               
             })
+        }
+        else if(name !== '' && avatarURL !== null){
+            handleUpload();
         }
 
     }
@@ -55,7 +113,7 @@ export default function Profile() {
                                 <FiUpload color="#FFF" size={25} />
                             </span>
 
-                            <input type="file" accept="image/*" /> <br />
+                            <input type="file" accept="image/*" onChange={handleFile} /> <br />
                             {avatarURL === null ?
                                 <img src={avatar} width="250" height="250" alt="user-profile-pic" />
                                 :
