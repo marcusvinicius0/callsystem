@@ -3,8 +3,8 @@
 
 
 >Projeto Sistema de chamados<br>
-◾ Adicione empresas, crie chamados e edite os mesmos, podendo escolher entre aberto, em andamento ou atendido. Edite seu perfil como preferir e acompanhe o andamento dos chamados;
-◾  Nesse projeto é utilizado firebase para a autenticação, cadastro, login e persistência dos dados;
+◾ Adicione empresas, crie chamados e edite os mesmos, podendo escolher entre aberto, em andamento ou atendido. Edite seu perfil como preferir e acompanhe o andamento dos chamados;<br>
+◾  Nesse projeto é utilizado firebase para a autenticação, cadastro, login e persistência dos dados;<br>
 ◾  Todo o front-end feito em react.js;
 ##
 ### Tecnologias usadas:
