@@ -14,10 +14,13 @@ export default function Routes(){
         <Switch>    
             <Route exact path="/" component={SignIn} />
             <Route exact path="/register" component={SignUp} />
+
             <Route exact path="/dashboard" component={Dashboard} isPrivate />
             <Route exact path="/profile" component={Profile} isPrivate />
             <Route exact path="/customers" component={Customers} isPrivate />
             <Route exact path="/newcall" component={Newcall} isPrivate />
+            <Route exact path="/newcall/:id" component={Newcall} isPrivate />
+
         </Switch>
     )
 }

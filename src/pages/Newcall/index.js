@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 
 import firebase from '../../services/firebaseConnection';
+import { useHistory, useParams } from 'react-router-dom';
+
 import Header from '../../components/Header';
 import Title from '../../components/Title';
 import { AuthContext } from '../../contexts/auth';
@@ -10,7 +12,9 @@ import { FiPlusCircle } from 'react-icons/fi'
 import './newcall.css';
 
 export default function Newcall() {
-
+    const { id } = useParams();
+    const history = useHistory();
+    
     const [loadCustomers, setLoadCustomers] = useState(true);
     const [customers, setCustomers] = useState([]);
     const [customerSelected, setCustomerSelected] = useState(0);
@@ -20,6 +24,8 @@ export default function Newcall() {
     const [assunto, setAssunto] = useState('Suporte');
     const [status, setStatus] = useState('Aberto')
     const [complemento, setComplemento] = useState('');
+
+    const [idCustomer, setIdCustomer] = useState(false);
 
     const { user } = useContext(AuthContext);
 
@@ -48,6 +54,10 @@ export default function Newcall() {
                     setCustomers(lista);
                     setLoadCustomers(false);
 
+                    if(id){
+                        loadId(lista);
+                    }
+
                 })
                 .cacth((error) => {
                     console.log('Deu algum erro', error);
@@ -58,10 +68,53 @@ export default function Newcall() {
 
         loadCustomers();
 
-    }, [])
+    }, [id]);
+
+    async function loadId(lista){
+        await firebase.firestore().collection('chamados').doc(id)
+        .get()
+        .then((snapshot) => {
+            setAssunto(snapshot.data().assunto);
+            setStatus(snapshot.data().status);
+            setComplemento(snapshot.data().complemento)
+
+            let index = lista.findIndex(item => item.id === snapshot.data().clienteId )
+            setCustomerSelected(index);
+            setIdCustomer(true);
+        })
+        .catch((error)=>{
+            alert('Erro no ID passado: ', error);
+            setIdCustomer(false);
+        })
+    }
 
     async function handleRegister(e) {
         e.preventDefault();
+
+        if(idCustomer){
+            await firebase.firestore().collection('chamados')
+            .doc(id)
+            .update({
+                cliente: customers[customerSelected].nomeFantasia,
+                clienteId: customers[customerSelected].id,
+                assunto: assunto,
+                status: status,
+                complemento: complemento,
+                userId: user.uid
+            })
+            .then(()=>{
+                toast.success('Chamado editado com sucesso!')
+                setCustomerSelected(0);
+                setComplemento('');
+                history.push('/dashboard');
+            })
+            .catch((error)=>{
+                toast.error('Ops, erro ao registrar, tente novamente mais tarde.')
+                console.log(error);
+            })
+
+            return;
+        }
        
         await firebase.firestore().collection('chamados')
         .add({

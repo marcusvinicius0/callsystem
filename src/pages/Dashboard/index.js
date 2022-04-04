@@ -5,10 +5,10 @@ import Header from "../../components/Header";
 import Title from '../../components/Title';
 import { FiMessageSquare, FiPlus, FiSearch, FiEdit2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, setDate } from 'date-fns';
 
 import firebase from '../../services/firebaseConnection';
-// import { update } from 'tar';
+import Modal from '../../components/Modal';
 
 const listRef = firebase.firestore().collection('chamados').orderBy('created', 'desc');
 
@@ -18,6 +18,9 @@ export default function Dashboard() {
     const [loadingMore, setLoadingMore] = useState(false);
     const [isEmpty, setIsEmpty] = useState(false);
     const [lastDocs, setLastDocs] = useState();
+
+    const [showPostModal, setShowPostModal] = useState(false);
+    const [detail, setDetail] = useState();
 
     useEffect(() => {
 
@@ -85,7 +88,8 @@ export default function Dashboard() {
     }
 
     function togglePostModal(item){
-        console.log(item)
+        setShowPostModal(!showPostModal) //troca de true pra false
+        setDetail(item);
     }
 
     if (loading) {
@@ -157,9 +161,9 @@ export default function Dashboard() {
                                                 <button className="action" style={{ backgroundColor: '#3583F6' }} onClick={()=> togglePostModal(item)}>
                                                     <FiSearch color="#FFF" size={17} />
                                                 </button>
-                                                <button className="action" style={{ backgroundColor: '#F6A935' }}>
+                                                <Link className="action" style={{ backgroundColor: '#F6A935' }} to={`/newcall/${item.id}`}>
                                                     <FiEdit2 color="#FFF" size={17} />
-                                                </button>
+                                                </Link>
                                             </td>
                                         </tr>
                                     )
@@ -173,8 +177,15 @@ export default function Dashboard() {
                     </>
                 )}
 
-
             </div>
+
+            {showPostModal && (
+                <Modal
+                    conteudo={detail}
+                    close={togglePostModal}
+                />
+            )}
+
 
         </div>
     )
